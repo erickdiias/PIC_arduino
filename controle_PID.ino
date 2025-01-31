@@ -4,9 +4,9 @@
 #define IN1 6   // Ativa o motor (gira para um lado)
 
 // Parâmetros PID
-float Kp = 1.29, Ki = 0.0, Kd = 0.0;  
-float setpoint = 200.0;  // Distância desejada em mm
-
+float Kp = 0.0, Ki = 0.0, Kd = 0.0;  
+float setpoint = 120.0;  // Distância desejada em mm
+float y=0, yf=0, kf=0;
 // Variáveis PID
 float erro, erro_anterior = 0;
 float integral = 0;
@@ -35,10 +35,16 @@ void loop() {
     long duration = pulseIn(ECHO_PIN, HIGH);
     float mensurado = duration * 0.034 / 2.0 * 10.0; // Conversão para mm
 
+    kf =10;
+    yf = yf*(kf-1)/kf + mensurado/kf;
+
     // Cálculo do erro
-    erro = setpoint - mensurado;
+    erro = setpoint - yf;
     
     // Cálculo PID
+    Kp = 15.0;
+    Ki = 0.2;
+    Kd = 0.0;
     integral += erro;
     derivada = erro - erro_anterior;
     output_PID = (Kp * erro) + (Ki * integral) + (Kd * derivada);
@@ -48,20 +54,28 @@ void loop() {
     
     // Envia PWM para o motor
     analogWrite(ENA, (int)output_PWM);
-    
+
+    /*
     // Exibe os valores no Serial Plotter
-    Serial.print("Setpoint: ");
+    Serial.print("Setpoint:");
     Serial.print(setpoint);
-    Serial.print(", ");
-    Serial.print("Mensurado: ");
+    Serial.print(" ");
+
+    Serial.print("Distancia:");
     Serial.print(mensurado);
-    Serial.print(", ");
-    Serial.print("Erro: ");
+    Serial.print(" ");
+
+    Serial.print("Erro:");
     Serial.print(erro);
-    Serial.print(", ");
-    Serial.print("PWM: ");
-    Serial.println(output_PWM);
-    
+    Serial.print(" ");
+
+    Serial.print("PID:");
+    Serial.println(output_PID);
+    */
+    Serial.print(0);   Serial.print(" "); 
+    Serial.print(setpoint);   Serial.print(" ");   Serial.print(yf);  Serial.print(" ");  Serial.println(output_PID);
+
+
     erro_anterior = erro;  // Atualiza o erro anterior
-    delay(100);
+    //delay(100);
 }
